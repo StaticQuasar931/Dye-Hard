@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Dye Hard</title>
+  <meta name="description" content="Play Dye Hard, a colorful browser action game built for modern WebGL browsers.">
+  <meta name="theme-color" content="#111111">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Dye Hard">
+  <meta property="og:description" content="Play Dye Hard in your browser.">
+  <meta property="og:image" content="logo.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Dye Hard">
+  <meta name="twitter:description" content="Play Dye Hard in your browser.">
+  <meta name="twitter:image" content="logo.webp">
+  <link rel="icon" href="favicon.ico">
+  <link rel="manifest" href="site.webmanifest">
+  <script src="game-interface.js"></script>
+  <style>
+    html,body,#game{height:100%;margin:0;background:#111;overflow:hidden}body{font-family:Arial,sans-serif}#game{position:fixed;inset:0;display:grid;place-items:center}#unity-canvas{width:100%;height:100%;background:#111}.load{position:fixed;inset:0;display:grid;place-items:center;background:#111;color:#fff;transition:opacity .25s}.load.done{opacity:0;pointer-events:none}.box{text-align:center}.box img{width:140px;height:140px;object-fit:contain}.bar{width:min(320px,70vw);height:8px;margin-top:18px;background:#333;border-radius:99px;overflow:hidden}.fill{width:0;height:100%;background:#55d6ff}
+  </style>
+</head>
+<body>
+  <main id="game"><canvas id="unity-canvas"></canvas></main>
+  <div class="load" id="loader"><div class="box"><img src="logo.webp" alt="Dye Hard"><div class="bar"><div class="fill" id="fill"></div></div></div></div>
+  <script>
+    const canvas = document.getElementById('unity-canvas');
+    const loader = document.getElementById('loader');
+    const fill = document.getElementById('fill');
+    const build = 'Build';
+    const config = {
+      dataUrl: build + '/Build.data.unityweb',
+      frameworkUrl: build + '/Build.framework.js.unityweb',
+      codeUrl: build + '/Build.wasm.unityweb',
+      streamingAssetsUrl: 'StreamingAssets',
+      companyName: 'Dye Hard',
+      productName: 'Dye Hard',
+      productVersion: '0.10.6',
+      devicePixelRatio: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? Math.min(devicePixelRatio, 2) : devicePixelRatio
+    };
+    window.onGameStarted = () => loader.classList.add('done');
+    const script = document.createElement('script');
+    script.src = build + '/Build.loader.js';
+    script.onload = () => createUnityInstance(canvas, config, progress => {
+      fill.style.width = Math.round(progress * 100) + '%';
+      window.GameInterface.sendPreloadProgress(progress * 100);
+    }).then(() => window.onGameStarted()).catch(error => {
+      console.error(error);
+      loader.textContent = 'The game could not start. Please refresh the page.';
+    });
+    document.body.appendChild(script);
+  </script>
+</body>
+</html>

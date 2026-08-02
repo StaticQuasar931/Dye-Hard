@@ -1,2 +1,6 @@
-# Auto detect text files and perform LF normalization
 * text=auto
+*.unityweb binary
+*.wasm binary
+*.bundle binary
+*.webp binary
+*.ico binary
