@@ -39,16 +39,30 @@
       productVersion: '0.10.6',
       devicePixelRatio: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? Math.min(devicePixelRatio, 2) : devicePixelRatio
     };
+    let unityStarted = false;
+    let unityPromise = null;
     window.onGameStarted = () => loader.classList.add('done');
+    function startUnity() {
+      if (unityStarted) return unityPromise;
+      unityStarted = true;
+      unityPromise = createUnityInstance(canvas, config, progress => {
+        fill.style.width = Math.round(progress * 100) + '%';
+        window.GameInterface.sendPreloadProgress(progress * 100);
+      }).then(instance => {
+        window.DyeHardUnity = instance;
+        window.onGameStarted();
+        return instance;
+      }).catch(error => {
+        unityStarted = false;
+        console.error(error);
+        loader.textContent = 'The game could not start. Please refresh the page.';
+      });
+      return unityPromise;
+    }
     const script = document.createElement('script');
     script.src = build + '/Build.loader.js';
-    script.onload = () => createUnityInstance(canvas, config, progress => {
-      fill.style.width = Math.round(progress * 100) + '%';
-      window.GameInterface.sendPreloadProgress(progress * 100);
-    }).then(() => window.onGameStarted()).catch(error => {
-      console.error(error);
-      loader.textContent = 'The game could not start. Please refresh the page.';
-    });
+    script.onload = startUnity;
+    script.onerror = () => { loader.textContent = 'The game files could not load. Please refresh the page.'; };
     document.body.appendChild(script);
   </script>
 </body>
